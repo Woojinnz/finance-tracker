@@ -13,6 +13,8 @@ import time
 
 # Import Chrome Driver
 import undetected_chromedriver as uc
+from webdriver_manager.chrome import ChromeDriverManager
+driver_exec_path = ChromeDriverManager().install()
 
 
 class Tracker:
@@ -21,18 +23,31 @@ class Tracker:
     def __init__(self):    
 
         # Initalize a browser driver to automate web browser (Chrome)
-        self.driver = uc.Chrome()
+        self.driver = uc.Chrome(driver_executable_path=driver_exec_path)
 
+        # Bank Url
+        self.bank_url = "https://online.asb.co.nz/auth/?fm=header:login"
+
+        # Initalize flag to false
+        self.login_successful = False
+     
         self.login()
-        login = True
+        time.sleep(2)
 
-        # Create an element so that the program waits until my primary account is loaded
-        element = WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located((By.ID, "account-123659006323050"))
-        )
+        new_url = self.driver.current_url
 
-        # Click on the element to load the account and see transactions
-        element.click()
+        if new_url != self.bank_url:
+            self.login_successful = True
+       
+
+        
+        time.sleep(5)
+
+    
+        
+       
+
+
 
     def login(self):
         # Retrieve bank username and password from environment variables
@@ -40,21 +55,20 @@ class Tracker:
         password = os.environ.get('BANK_PASSWORD')
 
         # Navigate to bank website
-        bank_url = "https://online.asb.co.nz/auth/?fm=header:login"
-        self.driver.get(bank_url)
+        self.driver.get(self.bank_url)
 
         # Appropriate fields to enter username and password
         usernameField = self.driver.find_element(By.ID, "dUsername")
         usernameField.send_keys(username)
-        time.sleep(5)
         passwordField = self.driver.find_element(By.ID,"password")
         passwordField.send_keys(password)
-        time.sleep(5)
 
 
         # Login via clicking
         loginField = self.driver.find_element(By.ID, "loginBtn")
         loginField.click()
+
+        
         
 if __name__ == '__main__':
     instance = Tracker()
